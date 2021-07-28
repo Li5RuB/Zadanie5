@@ -11,6 +11,8 @@ namespace WebApplication1.Data
     {
         public DbSet<Post> Posts { get; set; }
         public DbSet<Text> Texts { get; set; }
+        public DbSet<Canvas> Canvases { get; set; }
+        public DbSet<Curve> Curves { get; set; }
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options): base(options)
         {
             Database.EnsureCreated();   // создаем базу данных при первом обращении

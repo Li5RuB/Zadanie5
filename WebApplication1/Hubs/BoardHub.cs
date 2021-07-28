@@ -27,7 +27,7 @@ namespace WebApplication1.Hubs
         public async Task ChangePost(object[] idtext)
         {
             int el = int.Parse(idtext[0].ToString());
-            await this.Clients.All.SendAsync("ChangePost", idtext);
+            await this.Clients.Others.SendAsync("ChangePost", idtext);
             var post = db.Posts.FirstOrDefault(t => t.El == el);
             post.CurrentText = idtext[1].ToString();
             await db.SaveChangesAsync();
@@ -38,7 +38,7 @@ namespace WebApplication1.Hubs
             int el = int.Parse(idtext[0].ToString());
             int w = int.Parse(idtext[1].ToString());
             int h = int.Parse(idtext[2].ToString());
-            await this.Clients.All.SendAsync("ResizePost", idtext);
+            await this.Clients.Others.SendAsync("ResizePost", idtext);
             var post = db.Posts.FirstOrDefault(t => t.El == el);
             post.Width = w;
             post.Height = h;
@@ -47,7 +47,7 @@ namespace WebApplication1.Hubs
 
         public async Task RemoveElem(object[] idtext)
         {
-            await this.Clients.All.SendAsync("RemoveElem", idtext);
+            await this.Clients.Others.SendAsync("RemoveElem", idtext);
             int id = int.Parse(idtext[0].ToString());
             switch (idtext[1].ToString())
             {
@@ -60,6 +60,14 @@ namespace WebApplication1.Hubs
                     var post = db.Posts.FirstOrDefault(t => t.El == id);
                     db.Posts.Remove(post);
                     await db.SaveChangesAsync(); 
+                    break;
+                case "Canvas":
+                    var canvas = db.Canvases.FirstOrDefault(t=>t.El==id);
+                    db.Canvases.Remove(canvas);
+                    await db.SaveChangesAsync();
+                    var curves = db.Curves.Where(t=>t.El==id);
+                    db.Curves.RemoveRange(curves);
+                    await db.SaveChangesAsync();
                     break;
             }
         }
@@ -84,7 +92,7 @@ namespace WebApplication1.Hubs
 
         public async Task Move(object[] position)
         {
-            await this.Clients.All.SendAsync("Move", position);
+            await this.Clients.Others.SendAsync("Move", position);
             int id = int.Parse(position[0].ToString());
             int x = int.Parse(position[1].ToString());
             int y = int.Parse(position[2].ToString());
@@ -105,18 +113,58 @@ namespace WebApplication1.Hubs
                     post.Z = z;
                     await db.SaveChangesAsync();
                     break;
+                case "Canvas":
+                    var canvas = db.Canvases.FirstOrDefault(t => t.El == id);
+                    var curves = db.Curves.Where(c => c.El == id);
+                    int movex = (canvas.X - x)*(-1);
+                    int movey = (canvas.Y - y)*(-1);
+                    foreach (var item in curves)
+                    {
+                        item.startX += movex;
+                        item.endX += movex;
+                        item.startY += movey;
+                        item.endY += movey;
+                    }
+                    await db.SaveChangesAsync();
+                    canvas.X = x;
+                    canvas.Y = y;
+                    canvas.Z = z;
+                    await db.SaveChangesAsync();
+                    break;
             }
         }
 
-        public async Task CreateCurve(Curve curve)
+        public async Task SendSignalCreateCanvas(int canvas)
         {
-            await this.Clients.All.SendAsync("SendCurve", curve);
+            await this.Clients.Others.SendAsync("ReceiveSignalCreateCanvas", canvas);
+            var can = new Canvas() { El = canvas};
+            await db.Canvases.AddAsync(can);
+            await db.SaveChangesAsync();
         }
-
+        public async Task SendLineValues(Curve curve ,object canvas)
+        {
+            await this.Clients.Others.SendAsync("ReceiveLine", curve, canvas);
+            curve.El = int.Parse(canvas.ToString());
+            await db.Curves.AddAsync(curve);
+            await db.SaveChangesAsync();
+        }
+        public async Task ResizeCanvas(object canvas,int l, int t, int h, int w)
+        {
+            await this.Clients.Others.SendAsync("ReceiveResizeCanvas", canvas,l,t,h,w);
+            var id = int.Parse(canvas.ToString());
+            var can = db.Canvases.FirstOrDefault(c => c.El == id);
+            can.X = l;
+            can.Y = t;
+            can.Height = h;
+            can.Width = w;
+            await db.SaveChangesAsync();
+        }
         public async Task Init(object obj)
         {
             var Posts = db.Posts;
             var Texts = db.Texts;
+            var Curves = db.Curves;
+            var Canvases = db.Canvases;
             foreach (var item in Posts)
             {
                 await this.Clients.Caller.SendAsync("CreatePost",item);
@@ -125,7 +173,18 @@ namespace WebApplication1.Hubs
             {
                 await this.Clients.Caller.SendAsync("CreateText", item);
             }
-
+            foreach (var item in Canvases)
+            {
+                await this.Clients.Caller.SendAsync("ReceiveSignalCreateCanvas", item.El);
+            }
+            foreach (var item in Curves)
+            {
+                await this.Clients.Caller.SendAsync("ReceiveLine", item, item.El);
+            }
+            foreach (var item in Canvases)
+            {
+                await this.Clients.Caller.SendAsync("ReceiveResizeCanvas", item.El, item.X, item.Y, item.Height, item.Width);
+            }
         }
     }
 }

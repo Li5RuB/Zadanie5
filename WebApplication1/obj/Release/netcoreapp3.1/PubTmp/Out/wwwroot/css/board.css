@@ -1,0 +1,56 @@
+﻿.postick {
+    border: 1px solid gray;
+    min-height: 200px;
+    min-width: 200px;
+    padding: 4px;
+    font-size: 85%;
+    background: #FFFC7F;
+    -moz-box-shadow: 2px 2px 2px #999999;
+    -webkit-box-shadow: 2px 2px 2px #999999;
+    box-shadow: 2px 2px 2px #999999;
+    position: absolute;
+}
+
+.toolbar {
+    height:15px;
+    text-align: right;
+    font-weight: bold;
+}
+
+/* Postick's button "delete" */
+.delete {
+    cursor: pointer;
+    font-size: 120%;
+}
+
+/* Content to be editable inside the postick */
+.editable {
+    cursor: pointer;
+    min-height: 180px;
+    marging: 0 auto;
+    min-width: 200px;
+    resize:both;
+    overflow:auto;
+    position: relative;
+    -moz-text-shadow: 1px 1px 0px white;
+    text-shadow: 1px 1px 0px white;
+}
+
+.editable:hover {
+    border: 1px dotted gray;
+}
+
+.nonedittext {
+    position: absolute;
+    min-height: 20px;
+    min-width: 20px;
+}
+.tex{
+
+}
+
+.canvas{
+    position: absolute;
+    height: 100%;
+    width: 100%;
+}
