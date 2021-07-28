@@ -37,6 +37,11 @@ D:\ITransitions\Zadanie5\WebApplication1\obj\Release\netcoreapp3.1\PubTmp\Out\ww
 D:\ITransitions\Zadanie5\WebApplication1\obj\Release\netcoreapp3.1\PubTmp\Out\wwwroot\lib\jquery\dist\jquery.js
 D:\ITransitions\Zadanie5\WebApplication1\obj\Release\netcoreapp3.1\PubTmp\Out\wwwroot\lib\jquery\dist\jquery.min.js
 D:\ITransitions\Zadanie5\WebApplication1\obj\Release\netcoreapp3.1\PubTmp\Out\wwwroot\lib\jquery\dist\jquery.min.map
+D:\ITransitions\Zadanie5\WebApplication1\obj\Release\netcoreapp3.1\PubTmp\Out\wwwroot\lib\jquery\dist\jquery.ui.touch-punch.js
+D:\ITransitions\Zadanie5\WebApplication1\obj\Release\netcoreapp3.1\PubTmp\Out\wwwroot\lib\jquery\dist\jquery.ui.touch-punch.min.js
+D:\ITransitions\Zadanie5\WebApplication1\obj\Release\netcoreapp3.1\PubTmp\Out\wwwroot\lib\jquery\jquery.draggableTouch.js
+D:\ITransitions\Zadanie5\WebApplication1\obj\Release\netcoreapp3.1\PubTmp\Out\wwwroot\lib\jquery\jquery.mobile.custom.js
+D:\ITransitions\Zadanie5\WebApplication1\obj\Release\netcoreapp3.1\PubTmp\Out\wwwroot\lib\jquery\jquery.mobile.custom.min.js
 D:\ITransitions\Zadanie5\WebApplication1\obj\Release\netcoreapp3.1\PubTmp\Out\wwwroot\lib\jquery\LICENSE.txt
 D:\ITransitions\Zadanie5\WebApplication1\obj\Release\netcoreapp3.1\PubTmp\Out\appsettings.Development.json
 D:\ITransitions\Zadanie5\WebApplication1\obj\Release\netcoreapp3.1\PubTmp\Out\appsettings.json

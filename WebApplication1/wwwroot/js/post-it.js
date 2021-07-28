@@ -49,7 +49,7 @@ async function start() {
 
     var $board = $('#board');
 
-
+    
     function Createpost(x, y, z, id,text,width,heigth) {
         if (text==null) {
             text=''
@@ -59,16 +59,8 @@ async function start() {
         $('#t_' + id + '').width(width).height(heigth);
         $('#' + id + '').draggable({
             cancel: '.editable',
-            stop: function () {
-                var id = parseInt($(this).attr('id'));
-                var x = $(this).position().left;
-                var y = $(this).position().top;
-                var z = $(this).css('z-index')
-                var objtext = [id, x, y, z,'Post']
-                hubConnection.invoke("Move", objtext);
-            },
         });
-        $('#' + id + '').on("mouseup", function () {
+        $('#' + id + '').on("vmouseup", function () {
             var width = $('#t_' + id + '').width();
             var height = $('#t_' + id + '').height();
             var objtext = [id, width, height]
@@ -79,7 +71,7 @@ async function start() {
             var objtext = [id, $('#t_' + id + '').html()];
             hubConnection.invoke("ChangePost", objtext);
         });
-        $('#' + id + '').on("click", function () {
+        $('#' + id + '').on("vclick", function () {
  
             if (tool == 4) {
                 var $this = $(this);
@@ -111,21 +103,21 @@ async function start() {
             var objtext = [id, x, y, z, 'Post']
             hubConnection.invoke("Move", objtext);
         });
+        $('#' + id + '').on("dragstop", function () {
+            var id = parseInt($(this).attr('id'));
+            var x = $(this).position().left;
+            var y = $(this).position().top;
+            var z = $(this).css('z-index')
+            var objtext = [id, x, y, z, 'Post']
+            hubConnection.invoke("Move", objtext);
+        });
     };
     
     function Createtext(x, y,text,z,id) {
         $board.append('<div class="nonedittext" id="' + id + '" style="left:' + x + 'px;top:' + y + 'px;z-index:' + z + '" >' + text + '</div>');        
-        $('#' + id + '').draggable({
-            stop: function () {
-                var id = parseInt($(this).attr('id'));
-                var x = $(this).position().left;
-                var y = $(this).position().top;
-                var z = $(this).css('z-index')
-                var objtext = [id, x, y, z,'Text']
-                hubConnection.invoke("Move", objtext);
-            },
+        $('#' + id + '').draggableTouch({
         });
-        $('#' + id + '').on("click", function () {
+        $('#' + id + '').on("vclick", function () {
             if (tool == 4) {
                 var $this = $(this);
                 $this.closest('.nonedittext').fadeOut('slow', function () {
@@ -165,14 +157,23 @@ async function start() {
             var objtext = [id, x, y, z, 'Text']
             hubConnection.invoke("Move", objtext);
         });
+        $('#' + id + '').on("dragend", function () {
+            var id = parseInt($(this).attr('id'));
+            var x = $(this).position().left;
+            var y = $(this).position().top;
+            var z = $(this).css('z-index')
+            var objtext = [id, x, y, z, 'Text']
+            hubConnection.invoke("Move", objtext);
+        });
     }
 
     function mouseup(e) {
         
         if (tool == 3) {
             drawGame.isDrawing = false;
-            ResizeCanvas(canvas.id, points.left - 1, points.top - 1, points.height + 2, points.width + 2);
-            hubConnection.invoke("ResizeCanvas", canvas.id, points.left - 1, points.top - 1, points.height + 2, points.width + 2)
+            ResizeCanvas(canvas.id, Math.round(points.left) - 1, Math.round(points.top) - 1, Math.round(points.height) + 2, Math.round(points.width) + 2);
+
+            hubConnection.invoke("ResizeCanvas", canvas.id, Math.round(points.left) - 1, Math.round(points.top) - 1, Math.round(points.height) + 2, Math.round(points.width) + 2)
             canvas = null;
         }
         drawGame.isDrawing == false;
@@ -181,18 +182,21 @@ async function start() {
 
     function mousemove(e) {
         if (drawGame.isDrawing) {
-            var mouseX = e.pageX - board.offsetLeft;
-            var mouseY = e.pageY - board.offsetTop;
+            let mouseX = e.pageX - this.offsetLeft;
+            let mouseY = e.pageY - this.offsetTop;
+            mouseY = Math.round(mouseY)
+            mouseX = Math.round(mouseX)
+            console.log('mousemove')
             if (!(mouseX == drawGame.startX &&
                 mouseY == drawGame.startY)) {
                 DrawLine(canvas, drawGame.startX, drawGame.startY, mouseX, mouseY, 2);
                 hubConnection.invoke("SendLineValues", line, canvas.id).catch(function (err) {
                     return console.error(err.toString());
                 });
-                line.startX = drawGame.startX;
-                line.startY = drawGame.startY;
-                line.endX = mouseX;
-                line.endY = mouseY;
+                line.startX = Math.round(drawGame.startX);
+                line.startY = Math.round(drawGame.startY);
+                line.endX = Math.round(mouseX);
+                line.endY = Math.round(mouseY);
                 if (mouseX < points.left) {
                     points.width += points.left - mouseX;
                     points.left = mouseX;
@@ -236,6 +240,31 @@ async function start() {
 
     function ResizeCanvas(id, left, top, height, width) {
         var canvas = document.getElementById(id), context = canvas.getContext('2d');
+        $('#' + id + '').draggableTouch({
+            start: function () {
+                if (tool == 3) {
+                    return false;
+                }
+            },
+        });
+        $('#' + id+'').on("dragend", function () {
+            var id = parseInt($(this).attr('id'));
+            var x = $(this).position().left;
+            var y = $(this).position().top;
+            var z = $(this).css('z-index')
+            var objtext = [id, x, y, z, 'Canvas']
+            hubConnection.invoke("Move", objtext);
+        });
+        $('#' + id + '').on('dragstart', function () {
+            var z = GetHighestIndex();
+            $(this).css('z-index', z + 2)
+            var id = parseInt($(this).attr('id'));
+            var x = $(this).position().left;
+            var y = $(this).position().top;
+            var z = $(this).css('z-index')
+            var objtext = [id, x, y, z, 'Canvas']
+            hubConnection.invoke("Move", objtext);
+        });
         var imageData = context.getImageData(left, top, width, height);
         canvas.height = height;
         canvas.width = width;
@@ -284,11 +313,13 @@ async function start() {
     });
 
 
-    $('#board').on('mousedown', function (b) {
-        let mouseX = b.pageX - this.offsetLeft;
-        let mouseY = b.pageY - this.offsetTop;
-        console.log(b.target.id);
-        if (b.target.id == "board") {
+    $('#board').on('vmousedown', function (e) {
+       
+        let mouseX = e.pageX - this.offsetLeft;
+        let mouseY = e.pageY - this.offsetTop;
+        mouseX = Math.round(mouseX);
+        mouseY = Math.round(mouseY);
+        if (e.target.id == "board") {
             switch (tool) {
                 case 1: 
                     var z = GetHighestIndex();
@@ -296,8 +327,8 @@ async function start() {
                     var post =
                     {
                         El: id,
-                        X: b.pageX,
-                        Y: b.pageY,
+                        X: mouseX,
+                        Y: mouseY,
                         Z: z,
                         CurrentText: "",
                     }
@@ -314,8 +345,8 @@ async function start() {
                     var objtext =
                     {
                         El: id,
-                        X: b.pageX,
-                        Y: b.pageY,
+                        X: mouseX,
+                        Y: mouseY,
                         Z: z,
                         CurrentText: text,
                     }
@@ -352,35 +383,10 @@ async function start() {
 
     function CreateFuleCanvas(id) {
         canvas = CreateCanvas(id, board.offsetHeight, board.offsetWidth);
-        canvas.addEventListener("mousemove", mousemove, false);
-        canvas.addEventListener("mouseup", mouseup, false);
-        canvas.addEventListener("click", EraseObject, false);
-        $(canvas).draggable({
-            drag: function () {
-                if (tool==3) {
-                    return false;
-                }
-            },
-            stop: function () {
-                var id = parseInt($(this).attr('id'));
-                var x = $(this).position().left;
-                var y = $(this).position().top;
-                var z = $(this).css('z-index')
-                var objtext = [id, x, y, z, 'Canvas']
-                hubConnection.invoke("Move", objtext);
-            },
-        });
-        $(canvas).on('dragstart', function () {
-            var z = GetHighestIndex();
-            $(this).css('z-index', z + 2)
-            var id = parseInt($(this).attr('id'));
-            var x = $(this).position().left;
-            var y = $(this).position().top;
-            var z = $(this).css('z-index')
-            var objtext = [id, x, y, z, 'Canvas']
-            hubConnection.invoke("Move", objtext);
-        });
-
+        $(canvas).on("vmousemove", mousemove);
+        $(canvas).on("vmouseup", mouseup);
+        $(canvas).on("vclick", EraseObject);
+        
         board.appendChild(canvas);
     }
 
